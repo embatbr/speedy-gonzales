@@ -12,12 +12,13 @@ class SequenceExecutor(object):
 
     def execute(self):
         for block in self.block_sequence:
+            print(block)
             function = block['function']
             args = block['args']
 
-            ret = function(self.memory, *args)
-            self.memory['ret'] = ret
-            print(ret.collect()) # TODO remove this debug print
+            function(self.memory, *args)
+
+        print(self.memory['rdd'].collect()) # for debug only
 
 
 class SequenceBuilder(object):

@@ -14,7 +14,9 @@ resp = r.post(
     data=json.dumps({
         'executor': {
             'steps': [
-                ['load_rdd', '{}/README.md'.format(PROJECT_ROOT_PATH)]
+                ['load_rdd', '{}/README.md'.format(PROJECT_ROOT_PATH)],
+                ['filter_empty_lines'],
+                ['remove_spaces']
             ]
         }
     })

@@ -10,8 +10,8 @@ class IndexAction(object):
     def on_get(self, req, resp):
         resp.status_code = falcon.HTTP_200
         resp.body = json.dumps({
-            'foo': 'bar'
-        }, indent=4, ensure_ascii=False)
+            'Ariba': 'Andale'
+        })
 
 
 class SubmitAction(object):
@@ -24,4 +24,6 @@ class SubmitAction(object):
         body = body.decode('utf8')
         body = json.loads(body)
 
-        self.spark_executor.execute()
+        executor = body.get('executor', dict())
+
+        self.spark_executor.execute(executor)

@@ -7,7 +7,7 @@ cd $SUBROOT_PATH
 export PROJECT_ROOT_PATH="$SUBROOT_PATH/.."
 
 
-pip install -r python-reqs/speedy-gonzales-server --upgrade
+pip install -r python-reqs/speedy-gonzales-test --upgrade
 
 
-gunicorn app.main
+python test/main.py

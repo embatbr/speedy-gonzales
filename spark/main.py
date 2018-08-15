@@ -1,15 +1,32 @@
 # -*- coding: utf-8 -*-
 
 
+import json
 from pyspark.sql import SparkSession
+import sys
+
+from sequencers import SequenceBuilder
+import settings
+# TODO import function to create script from exec params
+
+
+def execute(steps):
+    spark_context = SparkSession.builder.appName('speedy-gonzales').getOrCreate().sparkContext
+    spark_context._conf.set("spark.executorEnv.JAVA_HOME", settings.JAVA_HOME)
+    spark_context._conf.set("spark.driver.maxResultSize", settings.MAX_RESULT_SIZE)
+
+    sequence_builder = SequenceBuilder(spark_context)
+    sequence_executor = sequence_builder.build(steps)
+
+    sequence_executor.execute()
+
+    spark_context.stop()
 
 
 if __name__ == '__main__':
-    spark_context = SparkSession.builder.appName('SpeedyGonzales').getOrCreate().sparkContext
-    spark_context._conf.set("spark.executorEnv.JAVA_HOME", '/usr/lib/jvm/java-8-oracle')
-    spark_context._conf.set("spark.driver.maxResultSize", '4g')
+    params = sys.argv[1]
+    params = json.loads(params)
 
-    rdd = spark_context.textFile('../README.md')
-    print(rdd.collect())
+    steps = params.get('steps')
 
-    spark_context.stop()
+    execute(steps)

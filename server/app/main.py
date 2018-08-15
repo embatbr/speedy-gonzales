@@ -22,7 +22,7 @@ application = falcon.API()
 
 routes = {
     '/': actions.IndexAction(),
-    '/submit': actions.SubmitAction(executors.SparkExecutor())
+    '/jobs/submit': actions.SubmitAction(executors.SparkExecutor())
 }
 
 

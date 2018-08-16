@@ -34,6 +34,17 @@ def submit():
     )
 
     print(resp)
+    resp = r.post(
+        'http://localhost:8000/jobs/submit',
+        data=json.dumps({
+            'steps': [
+                ['load_rdd', '{}/spark/main.py'.format(PROJECT_ROOT_PATH)],
+                ['remove_spaces']
+            ]
+        })
+    )
+
+    print(resp)
 
 
 if __name__ == '__main__':

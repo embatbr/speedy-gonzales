@@ -14,10 +14,10 @@ fi
 export PYSPARK_PYTHON=python3
 
 
-PARAMS="$1"
+OPTIONS="$1"
 
 
 $SPARK_HOME/bin/spark-submit \
     --packages org.apache.hadoop:hadoop-aws:2.7.3 \
     --master local[*] \
-    main.py "$PARAMS"
+    main.py "$OPTIONS"

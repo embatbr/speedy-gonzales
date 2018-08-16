@@ -14,16 +14,31 @@ class IndexAction(object):
         })
 
 
+class SparkAction(object):
+
+    def __init__(self, spark_executor):
+        self.spark_executor = spark_executor
+
+    def on_post(self, req, resp):
+        payload = req.stream.read()
+        payload = payload.decode('utf8')
+        payload = json.loads(payload)
+
+        command = payload.get('command')
+        options = {}
+
+        command_method = getattr(self.spark_executor, command)
+        command_method(options)
+
+
 class SubmitAction(object):
 
     def __init__(self, spark_executor):
         self.spark_executor = spark_executor
 
     def on_post(self, req, resp):
-        body = req.stream.read()
-        body = body.decode('utf8')
-        body = json.loads(body)
+        payload = req.stream.read()
+        payload = payload.decode('utf8')
+        payload = json.loads(payload)
 
-        executor = body.get('executor', dict())
-
-        self.spark_executor.execute(executor)
+        self.spark_executor.submit(payload)

@@ -20,9 +20,12 @@ class RESTfulApplication(object):
 
 application = falcon.API()
 
+spark_executor = executors.SparkExecutor()
+
 routes = {
     '/': actions.IndexAction(),
-    '/jobs/submit': actions.SubmitAction(executors.SparkExecutor())
+    '/spark': actions.SparkAction(spark_executor),
+    '/jobs/submit': actions.SubmitAction(spark_executor)
 }
 
 

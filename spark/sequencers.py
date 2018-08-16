@@ -18,8 +18,6 @@ class SequenceExecutor(object):
 
             function(self.memory, *args)
 
-        print(self.memory['rdd'].collect()) # for debug only
-
 
 class SequenceBuilder(object):
 

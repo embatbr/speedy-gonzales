@@ -31,7 +31,7 @@ class SparkAction(object):
         command_method(options)
 
 
-class SubmitAction(object):
+class SubmitJobAction(object):
 
     def __init__(self, spark_executor):
         self.spark_executor = spark_executor

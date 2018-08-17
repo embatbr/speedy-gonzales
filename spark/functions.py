@@ -9,7 +9,14 @@ def load_rdd(memory, filepath):
 
 
 def jsonify(memory):
-    memory['rdd'] = memory['rdd'].map(lambda s: json.loads(s))
+    def __jsonify(s):
+        try:
+            return json.loads(s)
+        except json.decoder.JSONDecodeError:
+            return None
+
+    memory['rdd'] = memory['rdd'].map(__jsonify)
+    memory['rdd'] = memory['rdd'].filter(lambda x: x is not None)
 
 
 def take(memory, amount):

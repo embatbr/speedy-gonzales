@@ -7,20 +7,19 @@ import shutil
 import time
 
 
+PROJECT_ROOT_PATH = os.environ.get('PROJECT_ROOT_PATH')
+
+
 class SparkExecutor(object):
 
     def __init__(self):
-        HOME = os.environ.get('HOME')
-        self.queue = '{}/queue'.format(HOME)
+        self.queue = '/tmp/queue'
 
     def start(self):
         self.stop()
         os.makedirs(self.queue)
 
-        PROJECT_ROOT_PATH = os.environ.get('PROJECT_ROOT_PATH')
-
         command = "{}/spark/run.sh &".format(PROJECT_ROOT_PATH)
-
         os.system(command)
 
     def stop(self):
@@ -29,7 +28,29 @@ class SparkExecutor(object):
         if os.path.exists(self.queue):
             shutil.rmtree(self.queue)
 
-    def submit(self, payload):
-        filepath = '{}/{}.json'.format(self.queue, time.time())
-        with open(filepath, 'w') as file:
-            json.dump(payload, file, indent=4, ensure_ascii=False)
+    def status(self):
+        return os.path.exists(self.queue) and os.path.isdir(self.queue)
+
+    def submit_job(self, payload):
+        job_id = time.time()
+
+        filepath = '{}/{}.json'.format(self.queue, job_id)
+        try:
+            with open(filepath, 'w') as file:
+                json.dump(payload, file, indent=4, ensure_ascii=False)
+        except Exception:
+            return None
+
+        return job_id
+
+    def get_job_status(self, job_id):
+        if os.path.exists('{}/{}.json'.format(self.queue, job_id)):
+            return 'QUEUED'
+
+        if os.path.exists('{}/spark/job_id'.format(PROJECT_ROOT_PATH)):
+            with open('{}/spark/job_id'.format(PROJECT_ROOT_PATH)) as f:
+                if f.read() == '{}.json'.format(job_id):
+                    return 'RUNNING'
+                return 'FINISHED'
+
+        return 'FINISHED'

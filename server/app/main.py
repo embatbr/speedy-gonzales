@@ -25,7 +25,9 @@ spark_executor = executors.SparkExecutor()
 routes = {
     '/': actions.IndexAction(),
     '/spark': actions.SparkAction(spark_executor),
-    '/jobs/submit': actions.SubmitJobAction(spark_executor)
+    '/spark/status': actions.SparkAction(spark_executor),
+    '/jobs/submit': actions.SubmitJobAction(spark_executor),
+    '/jobs/{job_id}': actions.SubmitJobAction(spark_executor)
 }
 
 

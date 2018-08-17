@@ -10,33 +10,39 @@ from sequencers import BlockSequenceBuilder
 import settings
 
 
-def execute(options, steps):
+def execute(options, steps, filename):
+    with open('job_id', 'w') as f:
+        f.write(filename)
+
     spark_context = SparkSession.builder.appName('speedy-gonzales').getOrCreate().sparkContext
     spark_context._conf.set("spark.executorEnv.JAVA_HOME", settings.JAVA_HOME)
     spark_context._conf.set("spark.driver.maxResultSize", settings.MAX_RESULT_SIZE)
-    if options:
+    if options and ('s3' in options):
         spark_context._jsc.hadoopConfiguration().set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
-        if 's3' in options:
-            spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsAccessKeyId", options['s3']['aws_access_key_id'])
-            spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsSecretAccessKey", options['s3']['aws_secret_access_key'])
+        spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsAccessKeyId", options['s3']['aws_access_key_id'])
+        spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsSecretAccessKey", options['s3']['aws_secret_access_key'])
 
     block_sequence_builder = BlockSequenceBuilder(spark_context)
     block_sequence_executor = block_sequence_builder.build(steps)
 
     block_sequence_executor.execute()
-    print('\n'.join(map(lambda x: json.dumps(x), block_sequence_executor.memory['dataset']))) # for debug only
+    print(block_sequence_executor.memory['dataset'])
+    # print('\n'.join(map(lambda x: json.dumps(x), block_sequence_executor.memory['dataset']))) # for debug only
 
     spark_context.stop()
+
+    os.remove('job_id')
 
 
 def pop_queue(queue):
     filenames = os.listdir(queue)
     if filenames:
         filenames = sorted(filenames)
-        filepath = '{}/{}'.format(queue, filenames[0])
+        filename = filenames[0]
+        filepath = '{}/{}'.format(queue, filename)
 
         with open(filepath) as file:
-            return (json.load(file), filepath)
+            return (json.load(file), filepath, filename)
 
     return None
 
@@ -44,25 +50,24 @@ def pop_queue(queue):
 if __name__ == '__main__':
     import time
 
-    HOME = os.environ.get('HOME')
-    queue = '{}/queue'.format(HOME)
+    queue = '/tmp/queue'
 
     while True:
         ret = pop_queue(queue)
 
         if ret:
-            (data, filepath) = ret
+            (data, filepath, filename) = ret
             options = data.get('options')
             steps = data.get('steps')
 
+            os.remove(filepath)
+
             print()
             try:
-                execute(options, steps)
+                execute(options, steps, filename)
             except Exception as err:
                 print(err)
             print()
-
-            os.remove(filepath)
         else:
             print('Heartbeat ({} seconds)'.format(settings.HEARTBEAT))
             time.sleep(settings.HEARTBEAT)

@@ -11,28 +11,25 @@ class SparkExecutor(object):
 
     def __init__(self):
         HOME = os.environ.get('HOME')
-        self.socket = '{}/socket'.format(HOME)
+        self.queue = '{}/queue'.format(HOME)
 
-    def start(self, options):
-        self.stop(options)
-        os.makedirs(self.socket)
+    def start(self):
+        self.stop()
+        os.makedirs(self.queue)
 
         PROJECT_ROOT_PATH = os.environ.get('PROJECT_ROOT_PATH')
 
-        command = "{}/spark/run.sh '{}' &".format(
-            PROJECT_ROOT_PATH,
-            json.dumps(options, ensure_ascii=False)
-        )
+        command = "{}/spark/run.sh &".format(PROJECT_ROOT_PATH)
 
         os.system(command)
 
-    def stop(self, options):
+    def stop(self):
         os.system("kill -9 $(ps aux | grep spark | grep -v grep | awk {'print$2'})")
 
-        if os.path.exists(self.socket):
-            shutil.rmtree(self.socket)
+        if os.path.exists(self.queue):
+            shutil.rmtree(self.queue)
 
     def submit(self, payload):
-        filepath = '{}/{}.json'.format(self.socket, time.time())
+        filepath = '{}/{}.json'.format(self.queue, time.time())
         with open(filepath, 'w') as file:
             json.dump(payload, file, indent=4, ensure_ascii=False)

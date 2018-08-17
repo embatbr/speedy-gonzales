@@ -25,10 +25,9 @@ class SparkAction(object):
         payload = json.loads(payload)
 
         command = payload.get('command')
-        options = {}
 
         command_method = getattr(self.spark_executor, command)
-        command_method(options)
+        command_method()
 
 
 class SubmitJobAction(object):

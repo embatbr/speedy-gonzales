@@ -12,7 +12,6 @@ class SequenceExecutor(object):
 
     def execute(self):
         for block in self.block_sequence:
-            print(block)
             function = block['function']
             args = block['args']
 

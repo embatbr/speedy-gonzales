@@ -4,7 +4,6 @@
 import json
 import os
 import requests as r
-import time
 
 
 PROJECT_ROOT_PATH = os.environ.get('PROJECT_ROOT_PATH')
@@ -25,21 +24,16 @@ def submit():
     resp = r.post(
         'http://localhost:8000/jobs/submit',
         data=json.dumps({
+            'options': {
+                's3': {
+                    'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
+                    'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY')
+                }
+            },
             'steps': [
-                ['load_rdd', '{}/README.md'.format(PROJECT_ROOT_PATH)],
-                ['filter_empty_lines'],
-                ['remove_spaces']
-            ]
-        })
-    )
-
-    print(resp)
-    resp = r.post(
-        'http://localhost:8000/jobs/submit',
-        data=json.dumps({
-            'steps': [
-                ['load_rdd', '{}/spark/main.py'.format(PROJECT_ROOT_PATH)],
-                ['remove_spaces']
+                ['load_rdd', os.environ.get('S3_TEST_KEY')],
+                ['jsonify'],
+                ['take', 1]
             ]
         })
     )
@@ -48,11 +42,16 @@ def submit():
 
 
 if __name__ == '__main__':
-    while True:
-        command = input('command (start|stop|submit): ').strip()
+    running = True
+
+    while running:
+        command = input('command (start|stop|submit|exit): ').strip()
         if command in ['start', 'stop']:
             start_or_stop(command)
         elif command == 'submit':
             submit()
+        elif command == 'exit':
+            running = False
+            print('Exiting...')
         else:
             print("Unknown command '{}'".format(command))

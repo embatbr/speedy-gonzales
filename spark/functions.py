@@ -5,34 +5,19 @@ import json
 
 
 def load_rdd(memory, filepath):
-    spark_context = memory['spark_context']
-    rdd = spark_context.textFile(filepath)
-
-    memory['rdd'] = rdd
+    memory['rdd'] = memory['spark_context'].textFile(filepath)
 
 
 def jsonify(memory):
-    rdd = memory['rdd']
-
-    rdd = rdd.map(lambda s: json.loads(s))
-
-    memory['rdd'] = rdd
+    memory['rdd'] = memory['rdd'].map(lambda s: json.loads(s))
 
 
 def take(memory, amount):
-    rdd = memory['rdd']
-
-    dataset = rdd.take(amount)
-
-    memory['dataset'] = dataset
+    memory['dataset'] = memory['rdd'].take(amount)
 
 
 def collect(memory):
-    rdd = memory['rdd']
-
-    dataset = rdd.collect()
-
-    memory['dataset'] = dataset
+    memory['dataset'] = memory['rdd'].collect()
 
 
 def split_into_tables(memory, input_fields_by_table):
@@ -46,8 +31,4 @@ def split_into_tables(memory, input_fields_by_table):
 
         return splitted
 
-    rdd = memory['rdd']
-
-    rdd = rdd.map(__split)
-
-    memory['rdd'] = rdd
+    memory['rdd'] = memory['rdd'].map(__split)

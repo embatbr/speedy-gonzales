@@ -6,7 +6,7 @@ import os
 from pyspark.sql import SparkSession
 import sys
 
-from sequencers import SequenceBuilder
+from sequencers import BlockSequenceBuilder
 import settings
 
 
@@ -20,11 +20,11 @@ def execute(options, steps):
             spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsAccessKeyId", options['s3']['aws_access_key_id'])
             spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsSecretAccessKey", options['s3']['aws_secret_access_key'])
 
-    sequence_builder = SequenceBuilder(spark_context)
-    sequence_executor = sequence_builder.build(steps)
+    block_sequence_builder = BlockSequenceBuilder(spark_context)
+    block_sequence_executor = block_sequence_builder.build(steps)
 
-    sequence_executor.execute()
-    print('\n'.join(map(lambda x: json.dumps(x), sequence_executor.memory['dataset']))) # for debug only
+    block_sequence_executor.execute()
+    print('\n'.join(map(lambda x: json.dumps(x), block_sequence_executor.memory['dataset']))) # for debug only
 
     spark_context.stop()
 
@@ -64,5 +64,5 @@ if __name__ == '__main__':
 
             os.remove(filepath)
         else:
-            print('Sleeping for {} seconds'.format(settings.HEARTBEAT))
+            print('Heartbeat ({} seconds)'.format(settings.HEARTBEAT))
             time.sleep(settings.HEARTBEAT)

@@ -4,7 +4,7 @@
 import functions
 
 
-class SequenceExecutor(object):
+class BlockSequenceExecutor(object):
 
     def __init__(self, memory, block_sequence):
         self.memory = memory
@@ -18,7 +18,7 @@ class SequenceExecutor(object):
             function(self.memory, *args)
 
 
-class SequenceBuilder(object):
+class BlockSequenceBuilder(object):
 
     def __init__(self, spark_context):
         self.spark_context = spark_context
@@ -29,11 +29,10 @@ class SequenceBuilder(object):
         }
 
         block_sequence = list()
-
         for step in steps:
             block_sequence.append({
                 'function': getattr(functions, step[0]),
                 'args': step[1:]
             })
 
-        return SequenceExecutor(memory, block_sequence)
+        return BlockSequenceExecutor(memory, block_sequence)

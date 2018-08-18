@@ -26,8 +26,7 @@ def execute(options, steps, filename):
     block_sequence_executor = block_sequence_builder.build(steps)
 
     block_sequence_executor.execute()
-    print(block_sequence_executor.memory['dataset'])
-    # print('\n'.join(map(lambda x: json.dumps(x), block_sequence_executor.memory['dataset']))) # for debug only
+    print(json.dumps(block_sequence_executor.memory['dataset'], indent=4))
 
     spark_context.stop()
 

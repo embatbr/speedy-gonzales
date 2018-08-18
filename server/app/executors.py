@@ -16,19 +16,20 @@ class SparkExecutor(object):
         self.queue = '/tmp/queue'
 
     def start(self):
-        self.stop()
-        os.makedirs(self.queue)
-
-        command = "{}/spark/run.sh &".format(PROJECT_ROOT_PATH)
-        os.system(command)
+        if not self.is_online():
+            os.makedirs(self.queue)
+            command = "{}/spark/run.sh".format(PROJECT_ROOT_PATH)
+            os.system(command)
 
     def stop(self):
-        os.system("kill -9 $(ps aux | grep spark | grep -v grep | awk {'print$2'})")
+        if os.path.exists("{}/spark/spark.pid".format(PROJECT_ROOT_PATH)):
+            os.system("kill -9 $(cat {}/spark/spark.pid)".format(PROJECT_ROOT_PATH))
+            os.system("rm {}/spark/spark.pid".format(PROJECT_ROOT_PATH))
 
         if os.path.exists(self.queue):
             shutil.rmtree(self.queue)
 
-    def status(self):
+    def is_online(self):
         return os.path.exists(self.queue) and os.path.isdir(self.queue)
 
     def submit_job(self, payload):
@@ -41,7 +42,7 @@ class SparkExecutor(object):
         except Exception:
             return None
 
-        return job_id
+        return str(job_id)
 
     def get_job_status(self, job_id):
         if os.path.exists('{}/{}.json'.format(self.queue, job_id)):
@@ -51,6 +52,5 @@ class SparkExecutor(object):
             with open('{}/spark/job_id'.format(PROJECT_ROOT_PATH)) as f:
                 if f.read() == '{}.json'.format(job_id):
                     return 'RUNNING'
-                return 'FINISHED'
 
         return 'FINISHED'

@@ -5,16 +5,16 @@ Spark-based application to execute jobs faster and economically.
 ![Ariba, Ariba!](logo.png)
 
 The idea (for now) is to create a webserver exposing a RESTful API that receives requests and
-executes a combination of previously written PySpark scripts.
+executes a combination of previously written PySpark scripts, all in a single EC2 instance.
 
 
 ## REST API
 
-The REST API is provided by a tiny server built using Falcon. To start it, just do:
+The REST API is provided by a tiny server built with Falcon. To start it, just do:
 
 ```bash
 $ cd server
-$ ./startup.sh
+$ ./start.sh
 ```
 
 ### Endpoints and requests
@@ -47,7 +47,7 @@ As the name says, the field **options** is optional. The field **s3** in the exa
 GET /jobs/pop
 ```
 
-Reads the first element of the list, removing it. This endpoint must be used only by the Spark processing.
+Reads the first element of the list, removing it. This endpoint must be used only by the Spark process.
 
 #### Checking job status
 
@@ -63,15 +63,4 @@ Returns the status of the job given by the ID. These are:
 
 ### Testing
 
-Execute `$ ./testup.sh` and choose one of the options:
-
-- start
-- stop
-- submit
-
-## TODO
-
-### Study the following sources
-
-- [Spark JobServer](https://github.com/spark-jobserver/spark-jobserver)
-- [Spark Server](https://github.com/spark-server/spark-server)
+Execute `$ ./start.sh` and watch while two jobs are submitted and executed (one after the other). At the end, the script prints the files' contents.

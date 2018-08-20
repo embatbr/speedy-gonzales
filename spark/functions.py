@@ -8,6 +8,10 @@ def load_rdd(memory, filepath):
     memory['rdd'] = memory['spark_context'].textFile(filepath)
 
 
+def store_rdd(memory, filepath, num_partitions=1):
+    memory['rdd'].coalesce(num_partitions).saveAsTextFile(filepath)
+
+
 def jsonify(memory):
     def __jsonify(s):
         try:

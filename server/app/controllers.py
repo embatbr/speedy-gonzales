@@ -11,10 +11,6 @@ class JobController(object):
         self.spark_executor = spark_executor
 
     def on_post(self, req, resp):
-        if req.path != '/jobs/submit':
-            resp.status_code = falcon.HTTP_400
-            return
-
         payload = req.stream.read()
         try:
             payload = payload.decode('utf8')

@@ -26,7 +26,6 @@ def execute(job_id, options, steps):
     block_sequence_builder = BlockSequenceBuilder(spark_context)
     block_sequence_executor = block_sequence_builder.build(steps)
     block_sequence_executor.execute()
-    print(json.dumps(block_sequence_executor.memory['dataset']))
 
     spark_context.stop()
 
@@ -54,12 +53,10 @@ if __name__ == '__main__':
 
             print()
             print('BEGIN')
-            print()
             try:
                 execute(job_id, options, steps)
             except Exception as err:
                 print(err)
-            print()
             print('END')
             print()
         else:

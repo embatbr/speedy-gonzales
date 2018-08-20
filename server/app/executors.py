@@ -18,7 +18,7 @@ class SparkExecutor(object):
 
     def start(self):
         if not self.is_online():
-            command = "{}/spark/run.sh".format(PROJECT_ROOT_PATH)
+            command = "{}/spark/start.sh".format(PROJECT_ROOT_PATH)
             os.system(command)
 
     def stop(self):
@@ -55,4 +55,4 @@ class SparkExecutor(object):
                 if f.read() == job_id:
                     return 'RUNNING'
 
-        return 'FINISHED'
+        return 'NOT_FOUND'

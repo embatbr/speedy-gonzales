@@ -7,6 +7,7 @@ logging.basicConfig(level=logging.INFO)
 
 from app import controllers
 from app import executors
+from app import queues
 
 
 logger = logging.getLogger('speedy_gonzales_server')
@@ -28,13 +29,13 @@ class RESTfulApplication(object):
 
 application = falcon.API()
 
-spark_executor = executors.SparkExecutor()
+simple_queue = queues.SimpleQueue()
+spark_executor = executors.SparkExecutor(simple_queue)
 
 routes = {
-    '/': controllers.IndexController(),
-    '/spark/{action}': controllers.SparkController(spark_executor),
-    '/jobs/submit': controllers.SubmitJobController(spark_executor),
-    '/jobs/{job_id}': controllers.SubmitJobController(spark_executor)
+    '/jobs/submit': controllers.JobController(spark_executor),
+    '/jobs/{action}': controllers.JobController(spark_executor),
+    '/jobs/{action}/{job_id}': controllers.JobController(spark_executor)
 }
 
 

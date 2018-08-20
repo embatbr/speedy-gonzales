@@ -4,15 +4,16 @@
 import json
 import os
 from pyspark.sql import SparkSession
+import requests as r
 import sys
 
 from sequencers import BlockSequenceBuilder
 import settings
 
 
-def execute(options, steps, filename):
+def execute(job_id, options, steps):
     with open('job_id', 'w') as f:
-        f.write(filename)
+        f.write(job_id)
 
     spark_context = SparkSession.builder.appName('speedy-gonzales').getOrCreate().sparkContext
     spark_context._conf.set("spark.executorEnv.JAVA_HOME", settings.JAVA_HOME)
@@ -24,48 +25,42 @@ def execute(options, steps, filename):
 
     block_sequence_builder = BlockSequenceBuilder(spark_context)
     block_sequence_executor = block_sequence_builder.build(steps)
-
     block_sequence_executor.execute()
-    print(json.dumps(block_sequence_executor.memory['dataset'], indent=4))
+    print(json.dumps(block_sequence_executor.memory['dataset']))
 
     spark_context.stop()
 
     os.remove('job_id')
 
 
-def pop_queue(queue):
-    filenames = os.listdir(queue)
-    if filenames:
-        filenames = sorted(filenames)
-        filename = filenames[0]
-        filepath = '{}/{}'.format(queue, filename)
-
-        with open(filepath) as file:
-            return (json.load(file), filepath, filename)
-
+def pop_queue():
+    resp = r.get('http://localhost:8000/jobs/pop')
+    print(resp)
+    if resp.status_code == 200:
+        return resp.json()
     return None
 
 
 if __name__ == '__main__':
     import time
 
-    queue = '/tmp/queue'
-
     while True:
-        ret = pop_queue(queue)
+        ret = pop_queue()
 
         if ret:
-            (data, filepath, filename) = ret
-            options = data.get('options')
-            steps = data.get('steps')
-
-            os.remove(filepath)
+            job_id = ret.get('job_id')
+            options = ret.get('options')
+            steps = ret.get('steps')
 
             print()
+            print('BEGIN')
+            print()
             try:
-                execute(options, steps, filename)
+                execute(job_id, options, steps)
             except Exception as err:
                 print(err)
+            print()
+            print('END')
             print()
         else:
             print('Heartbeat ({} seconds)'.format(settings.HEARTBEAT))

@@ -3,6 +3,8 @@
 
 import json
 
+from functions_utils import transform
+
 
 def load_rdd(memory, filepath):
     memory['rdd'] = memory['spark_context'].textFile(filepath)
@@ -13,14 +15,7 @@ def store_rdd(memory, filepath, num_partitions=1):
 
 
 def jsonify(memory):
-    def __jsonify(s):
-        try:
-            return json.loads(s)
-        except json.decoder.JSONDecodeError:
-            return None
-
-    memory['rdd'] = memory['rdd'].map(__jsonify)
-    memory['rdd'] = memory['rdd'].filter(lambda x: x is not None)
+    transform(memory, json.loads, json.decoder.JSONDecodeError)
 
 
 def take(memory, amount):

@@ -60,5 +60,4 @@ if __name__ == '__main__':
             print('END')
             print()
         else:
-            print('Heartbeat ({} seconds)'.format(settings.HEARTBEAT))
             time.sleep(settings.HEARTBEAT)

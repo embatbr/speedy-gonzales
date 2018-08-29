@@ -40,7 +40,7 @@ POST /jobs/submit
 }
 ```
 
-As the name says, the field **options** is optional. The field **s3** in the example is needed only when interacting with S3. The field **steps** is a list of lists. Each of the internal lists has as first element a function name, with the arguments following. A unitary internal list represents a functions without arguments (e.g., collect). All functions are preoviously written, making the job completely parameterized.
+As the name says, the field **options** is optional. The field **s3** in the example is needed only when interacting with S3. The field **steps** is a list of lists. Each of the internal lists has as first element a function name, with the arguments following. A unitary internal list represents a function without arguments (e.g., collect). All functions are preoviously written, making the job completely parameterized. This allows the client to execute a Spark job using the functions provided by the server, without sending any code (and avoiding security issues and incompatibilities).
 
 ##### Response
 

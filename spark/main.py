@@ -15,19 +15,22 @@ def execute(job_id, options, steps):
     with open('job_id', 'w') as f:
         f.write(job_id)
 
-    spark_context = SparkSession.builder.appName('speedy-gonzales').getOrCreate().sparkContext
-    spark_context._conf.set("spark.executorEnv.JAVA_HOME", settings.JAVA_HOME)
-    spark_context._conf.set("spark.driver.maxResultSize", settings.MAX_RESULT_SIZE)
-    if options and ('s3' in options):
-        spark_context._jsc.hadoopConfiguration().set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
-        spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsAccessKeyId", options['s3']['aws_access_key_id'])
-        spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsSecretAccessKey", options['s3']['aws_secret_access_key'])
+    try:
+        spark_context = SparkSession.builder.appName('speedy-gonzales').getOrCreate().sparkContext
+        spark_context._conf.set("spark.executorEnv.JAVA_HOME", settings.JAVA_HOME)
+        spark_context._conf.set("spark.driver.maxResultSize", settings.MAX_RESULT_SIZE)
+        if options and ('s3' in options):
+            spark_context._jsc.hadoopConfiguration().set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
+            spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsAccessKeyId", options['s3']['aws_access_key_id'])
+            spark_context._jsc.hadoopConfiguration().set("fs.s3n.awsSecretAccessKey", options['s3']['aws_secret_access_key'])
 
-    block_sequence_builder = BlockSequenceBuilder(spark_context)
-    block_sequence_executor = block_sequence_builder.build(steps)
-    block_sequence_executor.execute()
-
-    spark_context.stop()
+        block_sequence_builder = BlockSequenceBuilder(spark_context)
+        block_sequence_executor = block_sequence_builder.build(steps)
+        block_sequence_executor.execute()
+    except Exception as err:
+        print(err)
+    finally:
+        spark_context.stop()
 
     os.remove('job_id')
 

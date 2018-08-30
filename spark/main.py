@@ -37,8 +37,8 @@ def execute(job_id, options, steps):
 
 def pop_queue():
     resp = r.get('http://localhost:8000/jobs/pop')
-    print(resp)
     if resp.status_code == 200:
+        print('pop!')
         return resp.json()
     return None
 
@@ -63,4 +63,5 @@ if __name__ == '__main__':
             print('END')
             print()
         else:
+            print('Sleeping for {} seconds'.format(settings.HEARTBEAT))
             time.sleep(settings.HEARTBEAT)

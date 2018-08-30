@@ -17,3 +17,21 @@ def transform(memory, func, err_class, filter_by_success=True):
     memory['rdd'] = memory['rdd'].map(__transform)
     memory['rdd'] = memory['rdd'].filter(filter_func)
     memory['rdd'] = memory['rdd'].map(extract)
+
+
+def deep_get(key_seq):
+    def _internal(obj):
+        ret = None
+
+        for key in key_seq:
+            if not isinstance(obj, dict):
+                return None
+
+            if key not in obj.keys():
+                return None
+
+            ret = obj = obj[key]
+
+        return ret
+
+    return _internal

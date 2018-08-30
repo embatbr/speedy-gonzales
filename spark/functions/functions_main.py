@@ -3,7 +3,7 @@
 
 import json
 
-from functions_utils import transform
+from functions_utils import transform, deep_get
 
 
 def load_rdd(memory, filepath):
@@ -38,3 +38,32 @@ def split_into_tables(memory, input_fields_by_table):
         return splitted
 
     memory['rdd'] = memory['rdd'].map(__split)
+
+
+def extract(memory, extractors):
+    def __extract(obj):
+        extracted_obj = dict()
+
+        for (table, value) in obj.items():
+            if table in extractors:
+                fields = value.keys()
+                fields_to_extract = extractors[table].keys()
+
+                extracted_obj[table] = dict()
+
+                for field in fields:
+                    if field in fields_to_extract:
+                        key_seq = extractors[table][field]
+                        extracted_obj[table][field] = deep_get(key_seq)(value[field])
+                    else:
+                        extracted_obj[table][field] = value[field]
+            else:
+                extracted_obj[table] = value
+
+        return extracted_obj
+
+    memory['rdd'] = memory['rdd'].map(__extract)
+
+
+# def group_by_table(memory, table_keys):
+#     pass

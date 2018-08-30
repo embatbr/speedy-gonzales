@@ -16,28 +16,29 @@ class JobController(object):
             payload = payload.decode('utf8')
             payload = json.loads(payload)
         except json.decoder.JSONDecodeError:
-            resp.status_code = falcon.HTTP_400
+            resp.status = falcon.HTTP_400
 
         options = payload.get('options')
         steps = payload.get('steps')
 
         job_id = self.spark_executor.submit_job(options, steps)
         if not job_id:
-            resp.status_code = falcon.HTTP_422
+            resp.status = falcon.HTTP_422
             return
 
-        resp.status_code = falcon.HTTP_200
+        resp.status = falcon.HTTP_200
         resp.body = json.dumps({
             'job_id': job_id
         })
 
     def on_get(self, req, resp, action, job_id=None):
         if action == 'pop' and job_id is None:
-            resp.status_code = falcon.HTTP_200
-            resp.body = json.dumps(self.spark_executor.pop_job())
+            job = self.spark_executor.pop_job()
+            resp.status = falcon.HTTP_200 if job else falcon.HTTP_410
+            resp.body = json.dumps(job)
 
         elif action == 'status':
-            resp.status_code = falcon.HTTP_200
+            resp.status = falcon.HTTP_200
             resp.body = json.dumps({
                 'status': self.spark_executor.get_job_status(job_id)
             })

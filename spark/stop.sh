@@ -9,5 +9,5 @@ DIR2DELETE="$1"
 
 
 kill -9 $(cat spark.pid)
-rm spark/spark.pid
+rm spark.pid
 rm -Rf "$DIR2DELETE"

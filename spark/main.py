@@ -45,13 +45,24 @@ def pop_queue():
     return None
 
 
+def exit():
+    pid_filepath = '{}/spark.pid'.format(settings.SUBROOT_PATH)
+    os.remove(pid_filepath)
+    print('Bye bye beautiful!')
+    sys.exit()
+
+
 if __name__ == '__main__':
     import time
+
+    num_sleeps = 0
 
     while True:
         ret = pop_queue()
 
         if ret:
+            num_sleeps = 0
+
             job_id = ret.get('job_id')
             options = ret.get('options')
             steps = ret.get('steps')
@@ -65,5 +76,9 @@ if __name__ == '__main__':
             print('END')
             print()
         else:
-            print('Sleeping for {} seconds'.format(settings.HEARTBEAT))
-            time.sleep(settings.HEARTBEAT)
+            num_sleeps = num_sleeps + 1
+            if num_sleeps == settings.MAX_SLEEPS:
+                exit()
+
+            print('Sleeping for {} seconds'.format(settings.SLEEP_INTERVAL))
+            time.sleep(settings.SLEEP_INTERVAL)

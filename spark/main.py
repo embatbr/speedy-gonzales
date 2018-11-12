@@ -27,10 +27,9 @@ def execute(job_id, options, steps):
         block_sequence_executor = block_sequence_builder.build(steps)
         block_sequence_executor.execute()
 
-        import json
-        json.dump(block_sequence_executor.memory['dataset'], open('/home/eduardo/output.json', 'w'), indent=4, ensure_ascii=False)
     except Exception as err:
         print(err)
+
     finally:
         spark_context.stop()
 

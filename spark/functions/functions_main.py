@@ -40,6 +40,13 @@ def split_into_tables(memory, input_fields_by_table):
     memory['rdd'] = memory['rdd'].map(__split)
 
 
+def group_by_table(memory, tables):
+    memory['tables'] = dict()
+
+    for table in tables:
+        memory['tables'][table] = memory['rdd'].map(lambda x: x[table]) # overwriting previous ones
+
+
 def extract(memory, extractors):
     def __extract(obj):
         extracted_obj = dict()
@@ -63,7 +70,3 @@ def extract(memory, extractors):
         return extracted_obj
 
     memory['rdd'] = memory['rdd'].map(__extract)
-
-
-# def group_by_table(memory, table_keys):
-#     pass

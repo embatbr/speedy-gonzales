@@ -3,7 +3,7 @@
 
 import json
 
-from functions_utils import transform, deep_get
+from functions_utils import transform, deep_get, seq_to_csv, upload_to_s3
 
 
 def load_rdd(memory, filepath):
@@ -43,8 +43,13 @@ def split_into_tables(memory, input_fields_by_table):
 def group_by_table(memory, tables):
     memory['tables'] = dict()
 
+    def _group(table):
+        def __internal(obj):
+            return obj[table]
+        return __internal
+
     for table in tables:
-        memory['tables'][table] = memory['rdd'].map(lambda x: x[table]) # overwriting previous ones
+        memory['tables'][table] = memory['rdd'].map(_group(table))
 
 
 def extract(memory, extractors):
@@ -70,3 +75,28 @@ def extract(memory, extractors):
         return extracted_obj
 
     memory['rdd'] = memory['rdd'].map(__extract)
+
+
+def json_to_list_for_tables(memory, input_fields_by_table):
+    def _convert(fields):
+        def __internal(obj):
+            return [obj.get(field) for field in fields]
+        return __internal
+
+    for (table, input_fields) in input_fields_by_table.items():
+        memory['tables'][table] = memory['tables'][table].map(_convert(input_fields))
+
+
+def upload_tables(memory, tables, bucket_name, keypath, extension):
+    def _stringify(row):
+        return '|'.join([str(r) for r in row])
+
+    for table in tables:
+        memory['tables'][table] = memory['tables'][table].map(seq_to_csv('|'))
+        data = memory['tables'][table].reduce(lambda x, y: '{}\n{}'.format(x, y))
+
+        key = '{}/{}.{}'.format(keypath, table, extension)
+        upload_to_s3(bucket_name, key, data)
+
+        key = '{}/_DONE'.format(keypath)
+        upload_to_s3(bucket_name, key, data)

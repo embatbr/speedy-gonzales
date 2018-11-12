@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import boto3
+import csv
+from io import StringIO
+
 
 def transform(memory, func, err_class, filter_by_success=True):
     def __transform(obj):
@@ -35,3 +39,20 @@ def deep_get(key_seq):
         return ret
 
     return _internal
+
+
+def seq_to_csv(delimiter):
+    def _internal(seq):
+        row = StringIO()
+        writer = csv.writer(row, delimiter=delimiter, **{
+            'lineterminator': ''
+        })
+        writer.writerow(seq)
+        return row.getvalue()
+    return _internal
+
+
+def upload_to_s3(bucket_name, key, data):
+    s3_resource = boto3.resource('s3')
+    obj = s3_resource.Object(bucket_name, key)
+    obj.put(Body=data)

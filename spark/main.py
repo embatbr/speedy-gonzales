@@ -11,6 +11,8 @@ import settings
 
 
 def execute(job_id, options, steps):
+    print("Job '{}' started".format(job_id))
+
     with open('job_id', 'w') as f:
         f.write(job_id)
 
@@ -35,11 +37,13 @@ def execute(job_id, options, steps):
 
     os.remove('job_id')
 
+    print("Job '{}' finished".format(job_id))
+
 
 def pop_queue():
     resp = r.get('http://localhost:8000/jobs/pop')
     if resp.status_code == 200:
-        print('pop!')
+        print('POP!')
         return resp.json()
     return None
 
@@ -66,14 +70,11 @@ if __name__ == '__main__':
             options = ret.get('options')
             steps = ret.get('steps')
 
-            print()
-            print('BEGIN')
             try:
                 execute(job_id, options, steps)
             except Exception as err:
                 print(err)
-            print('END')
-            print()
+
         else:
             num_sleeps = num_sleeps + 1
             if num_sleeps == settings.MAX_SLEEPS:

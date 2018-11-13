@@ -65,29 +65,29 @@ def group_by_table(memory, tables):
         memory['tables'][table] = memory['rdd'].map(_group(table))
 
 
-def extract(memory, extractors):
-    def __extract(obj):
-        extracted_obj = dict()
+# def extract(memory, extractors):
+#     def __extract(obj):
+#         extracted_obj = dict()
 
-        for (table, value) in obj.items():
-            if table in extractors:
-                fields = value.keys()
-                fields_to_extract = extractors[table].keys()
+#         for (table, value) in obj.items():
+#             if table in extractors:
+#                 fields = value.keys()
+#                 fields_to_extract = extractors[table].keys()
 
-                extracted_obj[table] = dict()
+#                 extracted_obj[table] = dict()
 
-                for field in fields:
-                    if field in fields_to_extract:
-                        key_seq = extractors[table][field]
-                        extracted_obj[table][field] = deep_get(key_seq)(value[field])
-                    else:
-                        extracted_obj[table][field] = value[field]
-            else:
-                extracted_obj[table] = value
+#                 for field in fields:
+#                     if field in fields_to_extract:
+#                         key_seq = extractors[table][field]
+#                         extracted_obj[table][field] = deep_get(key_seq)(value[field])
+#                     else:
+#                         extracted_obj[table][field] = value[field]
+#             else:
+#                 extracted_obj[table] = value
 
-        return extracted_obj
+#         return extracted_obj
 
-    memory['rdd'] = memory['rdd'].map(__extract)
+#     memory['rdd'] = memory['rdd'].map(__extract)
 
 
 def json_to_list_for_tables(memory, input_fields_by_table):

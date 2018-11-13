@@ -30,10 +30,23 @@ def split_into_tables(memory, input_fields_by_table):
     def __split(obj):
         splitted = dict()
 
-        for (table, input_fields) in input_fields_by_table.items():
+        for (table, fields_and_extractors) in input_fields_by_table.items():
             splitted[table] = dict()
-            for input_field in input_fields:
-                splitted[table][input_field] = obj.get(input_field)
+
+            fields = fields_and_extractors['fields']
+            extractors = fields_and_extractors['extractors']
+            extractors_keys = extractors.keys()
+
+            for field in fields:
+                sub_obj = obj.get(field)
+
+                if field in extractors_keys:
+                    extractor = extractors[field]
+                    for (sub_key, key_seq) in extractor.items():
+                        splitted[table][sub_key] = deep_get(obj[field], key_seq)
+
+                else:
+                    splitted[table][field] = sub_obj
 
         return splitted
 

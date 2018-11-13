@@ -58,11 +58,11 @@ def deep_get(obj, key_seq):
 def seq_to_csv(delimiter):
     def _internal(seq):
         row = StringIO()
-        writer = csv.writer(row, delimiter=delimiter, **{
-            'lineterminator': ''
-        })
+        writer = csv.writer(row, delimiter=delimiter, lineterminator='')
         writer.writerow(seq)
+
         return row.getvalue()
+
     return _internal
 
 

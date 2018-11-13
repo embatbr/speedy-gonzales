@@ -16,6 +16,8 @@ class SparkExecutor(object):
         self.queue = queue
         self.current_job = None
 
+        self.stop()
+
     def start(self):
         if not self.is_online():
             command = "{}/spark/start.sh".format(PROJECT_ROOT_PATH)

@@ -5,6 +5,23 @@ import csv
 from io import StringIO
 
 
+FORMATTERS = {
+    'trim': lambda s: s.strip(),
+    'pretty_cpf': lambda cpf: _pretty_cpf(cpf),
+    'pretty_pis': lambda pis: _pretty_pis(pis)
+}
+
+def _pretty_cpf(cpf):
+    if cpf is None:
+        return cpf
+    return '{}.{}.{}-{}'.format(cpf[:3], cpf[3:6], cpf[6:9], cpf[9:])
+
+def _pretty_pis(pis):
+    if pis is None:
+        return pis
+    return '{}.{}.{}-{}'.format(pis[:3], pis[3:8], pis[8:10], pis[10])
+
+
 def transform(memory, func, err_class, filter_by_success=True):
     def __transform(obj):
         try:

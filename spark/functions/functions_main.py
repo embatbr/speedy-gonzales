@@ -3,7 +3,7 @@
 
 import json
 
-from functions_utils import transform, deep_get, seq_to_csv, upload_to_s3
+from functions_utils import transform, deep_get, seq_to_csv, upload_to_s3, FORMATTERS
 
 
 def load_rdd(memory, filepath):
@@ -26,11 +26,11 @@ def collect(memory):
     memory['dataset'] = memory['rdd'].collect()
 
 
-def split_into_tables(memory, input_fields_by_table):
+def split_into_tables(memory, fields_by_table):
     def __split(obj):
         splitted = dict()
 
-        for (table, fields_and_extractors) in input_fields_by_table.items():
+        for (table, fields_and_extractors) in fields_by_table.items():
             splitted[table] = dict()
 
             fields = fields_and_extractors['fields']
@@ -65,6 +65,22 @@ def group_by_table(memory, tables):
         memory['tables'][table] = memory['rdd'].map(_group(table))
 
 
+def format_tables(memory, functions_by_table):
+    def _format(functions_by_field):
+        def __internal(obj):
+            keys = obj.keys()
+            for (field, function_name) in functions_by_field.items():
+                if field in keys:
+                    obj[field] = FORMATTERS[function_name](obj[field])
+
+            return obj
+
+        return __internal
+
+    for (table, functions_by_field) in functions_by_table.items():
+        memory['tables'][table] = memory['tables'][table].map(_format(functions_by_field))
+
+
 # def extract(memory, extractors):
 #     def __extract(obj):
 #         extracted_obj = dict()
@@ -90,14 +106,14 @@ def group_by_table(memory, tables):
 #     memory['rdd'] = memory['rdd'].map(__extract)
 
 
-def json_to_list_for_tables(memory, input_fields_by_table):
+def json_to_list_for_tables(memory, fields_by_table):
     def _convert(fields):
         def __internal(obj):
             return [obj.get(field) for field in fields]
         return __internal
 
-    for (table, input_fields) in input_fields_by_table.items():
-        memory['tables'][table] = memory['tables'][table].map(_convert(input_fields))
+    for (table, fields) in fields_by_table.items():
+        memory['tables'][table] = memory['tables'][table].map(_convert(fields))
 
 
 def upload_tables(memory, tables, bucket_name, keypath, extension):

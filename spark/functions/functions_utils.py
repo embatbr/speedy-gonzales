@@ -8,8 +8,13 @@ from io import StringIO
 
 FORMATTERS = {
     'trim': lambda s: _trim(s),
+    'pretty_sex': lambda cpf: _pretty_sex(cpf),
     'pretty_cpf': lambda cpf: _pretty_cpf(cpf),
     'pretty_pis': lambda pis: _pretty_pis(pis),
+    'pretty_brazilian_voting_number': lambda voting_number: _pretty_brazilian_voting_number(voting_number),
+    'pretty_brazilian_voting_zone': lambda zone: _pretty_brazilian_voting_zone(zone),
+    'pretty_brazilian_voting_section': lambda section: _pretty_brazilian_voting_section(section),
+    'pretty_cep': lambda pis: _pretty_cep(pis),
     'to_date': lambda date: _to_date(date),
     'timestamp_to_date': lambda timestamp: _timestamp_to_date(timestamp),
     'ensure_int': lambda int_candidate: _ensure_int(int_candidate)
@@ -25,19 +30,59 @@ def _trim(s):
 
     return trimmed
 
+def _pretty_sex(sex):
+    trimmed = _trim(sex)
+    if not trimmed:
+        return None
+
+    lowered = trimmed.lower()
+
+    return {
+        'masculino': 'M',
+        'feminino': 'F'
+    }.get(lowered)
+
 def _pretty_cpf(cpf):
     trimmed = _trim(cpf)
-    if not trimmed:
+    if (not trimmed) or (not trimmed.isdigit()):
         return None
 
     return '{}.{}.{}-{}'.format(trimmed[:3], trimmed[3:6], trimmed[6:9], trimmed[9:])
 
 def _pretty_pis(pis):
     trimmed = _trim(pis)
-    if not trimmed:
+    if (not trimmed) or (not trimmed.isdigit()):
         return None
 
     return '{}.{}.{}-{}'.format(trimmed[:3], trimmed[3:8], trimmed[8:10], trimmed[10])
+
+def _pretty_brazilian_voting_number(voting_number):
+    trimmed = _trim(voting_number)
+    if (not trimmed) or (not trimmed.isdigit()):
+        return None
+
+    return '{} {} {} {}'.format(trimmed[:4], trimmed[4:8], trimmed[8:10], trimmed[10:])
+
+def _pretty_brazilian_voting_zone(zone):
+    trimmed = _trim(zone)
+    if (not trimmed) or (not trimmed.isdigit()):
+        return None
+
+    return trimmed.zfill(3)
+
+def _pretty_brazilian_voting_section(section):
+    trimmed = _trim(section)
+    if (not trimmed) or (not trimmed.isdigit()):
+        return None
+
+    return trimmed.zfill(4)
+
+def _pretty_cep(cep):
+    trimmed = _trim(cep)
+    if (not trimmed) or (not trimmed.isdigit()):
+        return None
+
+    return '{}-{}'.format(trimmed[:5], trimmed[5:])
 
 def _to_date(date_str):
     trimmed = _trim(date_str)

@@ -17,7 +17,8 @@ FORMATTERS = {
     'pretty_cep': lambda pis: _pretty_cep(pis),
     'to_date': lambda date: _to_date(date),
     'timestamp_to_date': lambda timestamp: _timestamp_to_date(timestamp),
-    'ensure_int': lambda int_candidate: _ensure_int(int_candidate)
+    'ensure_int': lambda int_candidate: _ensure_int(int_candidate),
+    'str2int': lambda s: _str2int(s)
 }
 
 def _trim(s):
@@ -119,6 +120,13 @@ def _ensure_int(int_candidate):
 
     return int(int_candidate)
 
+def _str2int(s):
+    trimmed = _trim(s)
+    if (not trimmed) or (not trimmed.isdigit()):
+        return None
+
+    return int(trimmed)
+
 
 def transform(memory, func, err_class, filter_by_success=True):
     def __transform(obj):
@@ -142,7 +150,9 @@ def deep_get(obj, key_seq):
     ret = None
 
     for key in key_seq:
-        if not isinstance(obj, dict):
+        if not isinstance(obj, list):
+            pass
+        elif not isinstance(obj, dict):
             return None
 
         if key not in obj.keys():

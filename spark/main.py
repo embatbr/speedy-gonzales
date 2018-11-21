@@ -34,8 +34,7 @@ def execute(job_id, options, steps):
 
     finally:
         spark_context.stop()
-
-    os.remove('job_id')
+        os.remove('job_id')
 
     print("Job '{}' finished".format(job_id))
 

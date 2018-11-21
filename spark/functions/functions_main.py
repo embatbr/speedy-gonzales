@@ -27,30 +27,20 @@ def collect(memory):
 
 
 def split_into_tables(memory, fields_by_table):
-    def __split(obj):
+    def _split(obj):
         splitted = dict()
 
         for (table, fields_and_extractors) in fields_by_table.items():
             splitted[table] = dict()
 
             fields = fields_and_extractors['fields']
-            extractors = fields_and_extractors['extractors']
-            extractors_keys = extractors.keys()
-
             for field in fields:
                 sub_obj = obj.get(field)
-
-                if field in extractors_keys:
-                    extractor = extractors[field]
-                    for (sub_key, key_seq) in extractor.items():
-                        splitted[table][sub_key] = deep_get(obj[field], key_seq)
-
-                else:
-                    splitted[table][field] = sub_obj
+                splitted[table][field] = sub_obj
 
         return splitted
 
-    memory['rdd'] = memory['rdd'].map(__split)
+    memory['rdd'] = memory['rdd'].map(_split)
 
 
 def group_by_table(memory, tables):
@@ -63,6 +53,72 @@ def group_by_table(memory, tables):
 
     for table in tables:
         memory['tables'][table] = memory['rdd'].map(_group(table))
+
+
+def flatten_tables(memory, extractors_by_table):
+    def _flatten(fields_and_extractors):
+        def __internal(obj):
+            for (field, extractors) in fields_and_extractors.items():
+                for (sub_key, key_seq) in extractors.items():
+                    ret = deep_get(obj[field], key_seq)
+                    if ret is not None:
+                        obj[sub_key] = ret
+
+                del obj[field]
+
+            return obj
+
+        return __internal
+
+    for (table, table_extractors) in extractors_by_table.items():
+        rdd = memory['tables'][table]
+        rdd = rdd.map(_flatten(table_extractors))
+        memory['tables'][table] = rdd
+
+
+def explode_tables(memory, fields_by_table):
+    def _invert(field):
+        def __internal(obj):
+            collection_obj = obj.get(field)
+            if collection_obj:
+                del obj[field]
+                new_collection_obj = list()
+
+                for sub_obj in collection_obj:
+                    sub_obj.update(obj)
+                    new_collection_obj.append(sub_obj)
+
+                return new_collection_obj
+
+            return [obj]
+
+        return __internal
+
+    for (table, fields) in fields_by_table.items():
+        rdd = memory['tables'][table]
+
+        for field in fields:
+            rdd = rdd.map(_invert(field))
+            rdd = rdd.flatMap(lambda xs: [x for x in xs])
+
+        memory['tables'][table] = rdd
+
+
+def rename_tables_fields(memory, renamings_by_table):
+    def _rename(renamings):
+        def __internal(obj):
+            keys = obj.keys()
+            for (old_field, new_field) in renamings.items():
+                if old_field in keys:
+                    obj[new_field] = obj[old_field]
+                    del obj[old_field]
+
+            return obj
+
+        return __internal
+
+    for (table, renamings) in renamings_by_table.items():
+        memory['tables'][table] = memory['tables'][table].map(_rename(renamings))
 
 
 def format_tables(memory, functions_by_table):
@@ -81,29 +137,19 @@ def format_tables(memory, functions_by_table):
         memory['tables'][table] = memory['tables'][table].map(_format(functions_by_field))
 
 
-# def extract(memory, extractors):
-#     def __extract(obj):
-#         extracted_obj = dict()
+def ensure_not_nulls(memory, fields_by_table):
+    def _ensure(fields):
+        def __internal(obj):
+            keys = obj.keys()
+            for field in fields:
+                if field not in keys:
+                    return False
+            return True
 
-#         for (table, value) in obj.items():
-#             if table in extractors:
-#                 fields = value.keys()
-#                 fields_to_extract = extractors[table].keys()
+        return __internal
 
-#                 extracted_obj[table] = dict()
-
-#                 for field in fields:
-#                     if field in fields_to_extract:
-#                         key_seq = extractors[table][field]
-#                         extracted_obj[table][field] = deep_get(key_seq)(value[field])
-#                     else:
-#                         extracted_obj[table][field] = value[field]
-#             else:
-#                 extracted_obj[table] = value
-
-#         return extracted_obj
-
-#     memory['rdd'] = memory['rdd'].map(__extract)
+    for (table, fields) in fields_by_table.items():
+        memory['tables'][table] = memory['tables'][table].filter(_ensure(fields))
 
 
 def json_to_list_for_tables(memory, fields_by_table):
@@ -117,9 +163,6 @@ def json_to_list_for_tables(memory, fields_by_table):
 
 
 def upload_tables(memory, tables, bucket_name, keypath, extension):
-    def _stringify(row):
-        return '|'.join([str(r) for r in row])
-
     for table in tables:
         memory['tables'][table] = memory['tables'][table].map(seq_to_csv('|'))
         data = memory['tables'][table].reduce(lambda x, y: '{}\n{}'.format(x, y))

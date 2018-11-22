@@ -117,6 +117,24 @@ def rename_tables_fields(memory, renamings_by_table):
         memory['tables'][table] = memory['tables'][table].map(_rename(renamings))
 
 
+def expand_tables(memory, expansions_by_table):
+    def _expand(expansions):
+        def __internal(obj):
+            for expansion in expansions:
+                field = expansion.get('field')
+                default_value = expansion.get('default_value')
+
+                if field is not None:
+                    obj[field] = default_value
+
+            return obj
+
+        return __internal
+
+    for (table, expansions) in expansions_by_table.items():
+        memory['tables'][table] = memory['tables'][table].map(_expand(expansions))
+
+
 def format_tables(memory, functions_by_table):
     def _format(functions_by_field):
         def __internal(obj):
@@ -146,6 +164,23 @@ def ensure_not_nulls(memory, fields_by_table):
 
     for (table, fields) in fields_by_table.items():
         memory['tables'][table] = memory['tables'][table].filter(_ensure(fields))
+
+
+def unify_tables(memory, unions):
+    all_sources_to_delete = set()
+
+    for union in unions:
+        sources = union['sources']
+        sink = union['sink']
+
+        sources_to_delete = set(union['sources_to_delete'])
+        all_sources_to_delete = all_sources_to_delete.union(sources_to_delete)
+
+        rdd_sources = [memory['tables'][source] for source in sources]
+        memory['tables'][sink] = memory['spark_context'].union(rdd_sources)
+
+    for source in all_sources_to_delete:
+        del memory['tables'][source]
 
 
 def json_to_list_for_tables(memory, fields_by_table):

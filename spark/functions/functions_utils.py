@@ -23,6 +23,7 @@ FORMATTERS = {
     'ensure_int': lambda int_candidate: _ensure_int(int_candidate),
     'ensure_float': lambda float_candidate: _ensure_float(float_candidate),
     'ensure_money': lambda money_candidate: _ensure_money(money_candidate),
+    'ensure_boolean': lambda boolean_candidate: _ensure_boolean(boolean_candidate),
     'str2int': lambda s: _str2int(s)
 }
 
@@ -160,6 +161,13 @@ def _ensure_money(money_candidate):
         return None
 
     return round(money, 2)
+
+def _ensure_boolean(boolean_candidate):
+    boolean = _ensure_float(boolean_candidate)
+    if (boolean is None) or (not isinstance(boolean, bool)):
+        return None
+
+    return boolean
 
 def _str2int(s):
     trimmed = _trim(s)

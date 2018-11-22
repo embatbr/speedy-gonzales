@@ -7,17 +7,22 @@ from io import StringIO
 
 
 FORMATTERS = {
+    'str': str,
     'trim': lambda s: _trim(s),
     'pretty_sex': lambda cpf: _pretty_sex(cpf),
+    'pretty_cnpj': lambda cpf: _pretty_cnpj(cpf),
     'pretty_cpf': lambda cpf: _pretty_cpf(cpf),
     'pretty_pis': lambda pis: _pretty_pis(pis),
     'pretty_brazilian_voting_number': lambda voting_number: _pretty_brazilian_voting_number(voting_number),
     'pretty_brazilian_voting_zone': lambda zone: _pretty_brazilian_voting_zone(zone),
     'pretty_brazilian_voting_section': lambda section: _pretty_brazilian_voting_section(section),
     'pretty_cep': lambda pis: _pretty_cep(pis),
+    'pretty_nirf': lambda nirf: _pretty_nirf(nirf),
     'to_date': lambda date: _to_date(date),
     'timestamp_to_date': lambda timestamp: _timestamp_to_date(timestamp),
     'ensure_int': lambda int_candidate: _ensure_int(int_candidate),
+    'ensure_float': lambda float_candidate: _ensure_float(float_candidate),
+    'ensure_money': lambda money_candidate: _ensure_money(money_candidate),
     'str2int': lambda s: _str2int(s)
 }
 
@@ -42,6 +47,13 @@ def _pretty_sex(sex):
         'masculino': 'M',
         'feminino': 'F'
     }.get(lowered)
+
+def _pretty_cnpj(cnpj):
+    trimmed = _trim(cnpj)
+    if (not trimmed) or (not trimmed.isdigit()):
+        return None
+
+    return '{}.{}.{}/{}-{}'.format(trimmed[:2], trimmed[2:5], trimmed[5:8], trimmed[8:12], trimmed[12:])
 
 def _pretty_cpf(cpf):
     trimmed = _trim(cpf)
@@ -85,6 +97,13 @@ def _pretty_cep(cep):
 
     return '{}-{}'.format(trimmed[:5], trimmed[5:])
 
+def _pretty_nirf(nirf):
+    trimmed = _trim(nirf)
+    if (not trimmed) or (not trimmed.isdigit()):
+        return None
+
+    return '{}-{}'.format(trimmed[:7], trimmed[7])
+
 def _to_date(date_str):
     trimmed = _trim(date_str)
     if not trimmed:
@@ -119,6 +138,28 @@ def _ensure_int(int_candidate):
         return None
 
     return int(int_candidate)
+
+def _ensure_float(float_candidate):
+    if isinstance(float_candidate, float):
+        return float_candidate
+
+    if isinstance(float_candidate, int):
+        return float(float_candidate)
+
+    if not isinstance(float_candidate, str):
+        return None
+
+    try:
+        return float(float_candidate)
+    except Exception:
+        return None
+
+def _ensure_money(money_candidate):
+    money = _ensure_float(money_candidate)
+    if money is None:
+        return None
+
+    return round(money, 2)
 
 def _str2int(s):
     trimmed = _trim(s)

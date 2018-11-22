@@ -95,13 +95,9 @@ def explode_tables(memory, fields_by_table):
         return __internal
 
     for (table, fields) in fields_by_table.items():
-        rdd = memory['tables'][table]
-
         for field in fields:
-            rdd = rdd.map(_invert(field))
-            rdd = rdd.flatMap(lambda xs: [x for x in xs])
-
-        memory['tables'][table] = rdd
+            memory['tables'][table] = memory['tables'][table].map(_invert(field))
+            memory['tables'][table] = memory['tables'][table].flatMap(lambda xs: [x for x in xs])
 
 
 def rename_tables_fields(memory, renamings_by_table):

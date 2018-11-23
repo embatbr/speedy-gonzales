@@ -223,7 +223,12 @@ def seq_to_csv(delimiter):
     return _internal
 
 
-def upload_to_s3(bucket_name, key, data):
-    s3_resource = boto3.resource('s3')
+def upload_to_s3(bucket_name, key, data, aws_access_key_id, aws_secret_access_key):
+    session = boto3.Session(
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key
+    )
+
+    s3_resource = session.resource('s3')
     obj = s3_resource.Object(bucket_name, key)
     obj.put(Body=data)

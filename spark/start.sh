@@ -1,10 +1,10 @@
 #!/bin/bash
 
 
-export SUBROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd $SUBROOT_PATH
+export PROJECT_ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-export PROJECT_ROOT_PATH="$SUBROOT_PATH/.."
+export SUBROOT_PATH="$PROJECT_ROOT_PATH/spark"
+cd $SUBROOT_PATH
 
 
 if [ -z "$SPARK_HOME" ]; then

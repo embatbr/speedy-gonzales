@@ -1,13 +1,13 @@
 #!/bin/bash
 
 
-export SUBROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd $SUBROOT_PATH
+export PROJECT_ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-export PROJECT_ROOT_PATH="$SUBROOT_PATH/.."
+export SUBROOT_PATH="$PROJECT_ROOT_PATH/server"
+cd $SUBROOT_PATH
 
 
 pip install -r requirements.txt --upgrade
 
 
-gunicorn app.main
+gunicorn -b 0.0.0.0:8000 app.main

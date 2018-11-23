@@ -194,12 +194,15 @@ def json_to_list_for_tables(memory, fields_by_table):
 
 
 def upload_tables(memory, tables, bucket_name, keypath, extension):
+    aws_access_key_id = memory['spark_context']._jsc.hadoopConfiguration().get("fs.s3n.awsAccessKeyId")
+    aws_secret_access_key = memory['spark_context']._jsc.hadoopConfiguration().get("fs.s3n.awsSecretAccessKey")
+
     for table in tables:
         memory['tables'][table] = memory['tables'][table].map(seq_to_csv('|'))
         data = memory['tables'][table].reduce(lambda x, y: '{}\n{}'.format(x, y))
 
         key = '{}/{}.{}'.format(keypath, table, extension)
-        upload_to_s3(bucket_name, key, data)
+        upload_to_s3(bucket_name, key, data, aws_access_key_id, aws_secret_access_key)
 
         key = '{}/_DONE'.format(keypath)
-        upload_to_s3(bucket_name, key, data)
+        upload_to_s3(bucket_name, key, '', aws_access_key_id, aws_secret_access_key)

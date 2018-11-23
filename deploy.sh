@@ -15,13 +15,10 @@ rm -Rf spark/__pycache__/
 rm -Rf spark/functions/__pycache__/
 
 
-echo "ssh $USER@$INSTANCE_IP 'rm -Rf $USER_HOME/speedy-gonzales'"
-ssh $USER@$INSTANCE_IP 'rm -Rf $USER_HOME/speedy-gonzales'
+ssh $USER@$INSTANCE_IP "rm -Rf $USER_HOME/speedy-gonzales"
+ssh $USER@$INSTANCE_IP "mkdir $USER_HOME/speedy-gonzales"
 
-echo "scp -r server/ $USER@$INSTANCE_IP:$USER_HOME/speedy-gonzales"
 scp -r server/ $USER@$INSTANCE_IP:$USER_HOME/speedy-gonzales
-echo "scp -r spark/ $USER@$INSTANCE_IP:$USER_HOME/speedy-gonzales"
 scp -r spark/ $USER@$INSTANCE_IP:$USER_HOME/speedy-gonzales
 
-echo "ssh $USER@$INSTANCE_IP"
 ssh $USER@$INSTANCE_IP

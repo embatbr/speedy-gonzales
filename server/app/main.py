@@ -33,6 +33,7 @@ simple_queue = queues.SimpleQueue()
 spark_executor = executors.SparkExecutor(simple_queue)
 
 routes = {
+    '/health': controllers.HealthController(),
     '/jobs/submit': controllers.JobController(spark_executor),
     '/jobs/{action}': controllers.JobController(spark_executor),
     '/jobs/{action}/{job_id}': controllers.JobController(spark_executor)
